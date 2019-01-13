@@ -8,7 +8,7 @@ This is a generic cpp library that performs genetic search with any data stuctur
 
 
 ## Testing
-The code auto runs tests with google cloud build. Will be tested with standard library data structures of `vector`, `list`, and `array` (but not C arrays as they don't have iterators). It will be tested with number types `char`, `unsigned char`, `short`, `unsigned short`, `int`, `unsigned int`, `long`, `unsigned long`, `long long`, `float`, `double`, and `long double`.
+The code auto runs tests with google cloud build. Will be tested with standard library data structures of `vector` and `list`. It should also work with `C++ array`(but not C arrays as they don't have iterators). It will be tested with number types `char`, `unsigned char`, `short`, `unsigned short`, `int`, `unsigned int`, `long`, `unsigned long`, `long long`, `float`, `double`, and `long double`.
 
 ## Why
 This is a side project to learn the new conding conventions in C++11. My main job is as an embedded C programmer. I plan on using this library to find the best stratagies for playing Settlers of Catan.
