@@ -78,58 +78,35 @@ A bread_mutate(const A& parent1, const A& parent2, float div, float mutation_rat
     out.mutate(mutation_rate, mutation_scale);
     return out;
 }
-template<class A, class B, class C = void>
-class random { };
 
-template<class A, class B, typename std::enable_if<std::is_integral<B>::value>::type >
-class random { 
-public:
-    void operator()(A& array, C min, C max) {
-        // create random number distribution
-        std::default_random_engine generator;
-        std::uniform_int_distribution<C> dist(min,max);
-        // iterate through array
-        for (auto it = array.begin(); it != array.end(); it++) {
-            (*it) = dist(generator); // set value to random number
-        }
+template< class A, typename T >
+typename std::enable_if<std::is_floating_point<T>::value, bool>::type
+_random_init(A& array, T min, T max) {
+    std::default_random_engine generator;
+    std::uniform_real_distribution<T> dist(min, max);
+    // iterate through array
+    for (auto it = array.begin(); it != array.end(); it++) {
+        (*it) = dist(generator); // set value to random number
     }
-};
+    return true;
+}
 
-
-template<class A, class B, typename std::enable_if<std::is_floating_point<B>::value>::type >
-class random { 
-public:
-    void operator()(A& array, C min, C max) {
-        // create random number distribution
-        std::default_random_engine generator;
-        std::uniform_real_distribution<C> dist(min,max);
-        // iterate through array
-        for (auto it = array.begin(); it != array.end(); it++) {
-            (*it) = dist(generator); // set value to random number
-        }
+template< class A, typename T >
+typename std::enable_if<std::is_integral<T>::value, bool>::type
+_random_init(A& array, T min, T max) {
+    std::default_random_engine generator;
+    std::uniform_int_distribution<T> dist(min, max);
+    // iterate through array
+    for (auto it = array.begin(); it != array.end(); it++) {
+        (*it) = dist(generator); // set value to random number
     }
-};
-
-// template<class A, class T, 
-//     , std::uniform_int_distribution<T>>::type >
-// class i_random {
-    
-// public:
-//     void operator()(A& array, T min, T max) {
-//         // create random number distribution
-//         std::default_random_engine generator;
-//         std::uniform_int_distribution<T> dist(min, max);
-//         // iterate through array
-//         for (auto it = array.begin(); it != array.end(); it++) {
-//             (*it) = dist(generator); // set value to random number
-//         }
-//     }
-// };
+    return true;
+}
 
 template<class A, class T>
 void random_init(A& array, T min, T max) {
-    ASSERT(max>=min); // check the max > min
-    random<A,T,T>(array, min, max); // init array
+    ASSERT(max>=min); // check the max > min    
+    bool done = _random_init(array, min, max);
 }
 
 
