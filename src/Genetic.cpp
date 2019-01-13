@@ -236,14 +236,12 @@ do {                                                   \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, char );            \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, unchar__ );        \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, int );             \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, unint__ );         \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, short );           \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, unshort__ );       \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, long );            \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, longlong__ );      \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unint__ );         \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unshort__ );       \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, unlong__ );        \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, char );            \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, longlong__ );      \
 } while(false)
 
 #define _GEN_RUN_TEST_RNUM_TYPE(func)                   \
