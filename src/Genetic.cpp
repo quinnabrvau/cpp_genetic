@@ -53,7 +53,7 @@ A breed(const A& parent1, const A& parent2, float div ) {
     ASSERT(parent1.size() == parent2.size());
     // create the random number generator
     std::default_random_engine generator;
-    std::uniform_int_distribution<float> dist(0, 1);
+    std::uniform_real_distribution<float> dist(0, 1);
     
     // initialize the output as parent 1;
     A out(parent1.cbegin(),parent1.cend());
@@ -78,39 +78,61 @@ A bread_mutate(const A& parent1, const A& parent2, float div, float mutation_rat
     out.mutate(mutation_rate, mutation_scale);
     return out;
 }
-template<class A, class T>
-void r_random(A& array, T min, T max) {
-    // create random number distribution
-    std::default_random_engine generator;
-    std::uniform_real_distribution<T> dist(min,max);
-    // iterate through array
-    for (auto it = array.begin(); it != array.end(); it++) {
-        (*it) = dist(generator); // set value to random number
-    }
-}
+template<class A, class B, class C = void>
+class random { };
 
-template<class A, class T>
-void i_random(A& array, T min, T max) {
-    // create random number distribution
-    std::default_random_engine generator;
-    std::uniform_int_distribution<T> dist(min,max);
-    // iterate through array
-    for (auto it = array.begin(); it != array.end(); it++) {
-        (*it) = dist(generator); // set value to random number
+template<class A, class B, typename std::enable_if<std::is_integral<B>::value>::type >
+class random { 
+public:
+    void operator()(A& array, C min, C max) {
+        // create random number distribution
+        std::default_random_engine generator;
+        std::uniform_int_distribution<C> dist(min,max);
+        // iterate through array
+        for (auto it = array.begin(); it != array.end(); it++) {
+            (*it) = dist(generator); // set value to random number
+        }
     }
-}
+};
+
+
+template<class A, class B, typename std::enable_if<std::is_floating_point<B>::value>::type >
+class random { 
+public:
+    void operator()(A& array, C min, C max) {
+        // create random number distribution
+        std::default_random_engine generator;
+        std::uniform_real_distribution<C> dist(min,max);
+        // iterate through array
+        for (auto it = array.begin(); it != array.end(); it++) {
+            (*it) = dist(generator); // set value to random number
+        }
+    }
+};
+
+// template<class A, class T, 
+//     , std::uniform_int_distribution<T>>::type >
+// class i_random {
+    
+// public:
+//     void operator()(A& array, T min, T max) {
+//         // create random number distribution
+//         std::default_random_engine generator;
+//         std::uniform_int_distribution<T> dist(min, max);
+//         // iterate through array
+//         for (auto it = array.begin(); it != array.end(); it++) {
+//             (*it) = dist(generator); // set value to random number
+//         }
+//     }
+// };
 
 template<class A, class T>
 void random_init(A& array, T min, T max) {
     ASSERT(max>=min); // check the max > min
-    if (std::is_integral<T>::value) {
-        i_random<A,T>(array, min, max); // init value to integer array
-    } else if (std::is_floating_point<T>::value) {
-        r_random<A,T>(array, min, max); // init value to floating point array
-    } else {
-        ASSERT(false);
-    }
+    random<A,T,T>(array, min, max); // init array
 }
+
+
 
 }; //namespace genetic
 
@@ -232,7 +254,7 @@ __GEN_RUN_TEST( func, type,  list );             \
 __GEN_RUN_TEST( func, type,  vector );           \
 } while(false)
 
-#define _GEN_RUN_TEST_NUM_TYPE(func)                   \
+#define _GEN_RUN_TEST_INUM_TYPE(func)                  \
 do {                                                   \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, char );            \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, unchar__ );        \
@@ -245,11 +267,20 @@ _GEN_RUN_TEST_CONTAINER_TYPE( func, unint__ );         \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, unshort__ );       \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, unlong__ );        \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, char );            \
+} while(false)
+
+#define _GEN_RUN_TEST_RNUM_TYPE(func)                   \
+do {                                                   \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, float );           \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, double );          \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, longdouble__ );    \
 } while(false)
 
+#define _GEN_RUN_TEST_NUM_TYPE(func)   \
+do {                                    \
+    _GEN_RUN_TEST_INUM_TYPE(func);      \
+    _GEN_RUN_TEST_RNUM_TYPE(func);      \
+} while (false)
 
 void test__Genetic(void) {
     
