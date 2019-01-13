@@ -7,24 +7,35 @@
 
 #ifndef Genetic_hpp
 #define Genetic_hpp
-#include "Array.hpp"
 
-template<class T>
-class Genetic_Array:public Array<T> {
-    void i_random(T min = 0, T max = 10);
-    void r_random(T min = 0, T max = 10);
-public:
-    Genetic_Array(Array<T> A) : Array<T>(A) {};
-    Genetic_Array(Shape s) : Array<T>(s) {random();}
-    Genetic_Array(int cols = 1, int rows = 1) : Array<T>(cols,rows) {random();}
-    
-    void random(T min = 0, T max = 10);
-    Genetic_Array<T> breed(Genetic_Array& G);
-    void mutate(float mutation_rate = 0.0);
-    Genetic_Array bread_mutate(Genetic_Array& G, float mutation_rate = 0.0);
-};
-template<class T>
-Genetic_Array<T> f_breed(Genetic_Array<T>& A, Genetic_Array<T>& B );
+#ifdef TESTING
+    #include "unity.h"
+    #define ASSERT(...) TEST_ASSERT(__VA_ARGS__)
+else
+    #ifdef DEBUG
+        #include <cassert>
+        #define ASSERT(...) assert(__VA_ARGS__)
+    #else
+        #define ASSERT(...) #__VA_ARGS__
+    #endif
+#endif
+
+namespace genetic {
+
+template<class A>
+void mutate(A& array, float mutation_rate = 0.0, float mutation_scale = 0.0);
+
+template<class A>
+A breed(A& parent1, A& parent2 );
+
+template<class A>
+A bread_mutate(A& parent1, A& parent2, float mutation_rate = 0.0, float mutation_scale = 0.0);
+
+template<class A, class T>
+void random_init(A& array, T min, T max);
+
+}; //namespace genetic
 
 void test__Genetic(void);
+
 #endif /* Genetic_hpp */
