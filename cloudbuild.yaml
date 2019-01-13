@@ -1,0 +1,19 @@
+steps:
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/quinnabrvau/settlers_comp_player.git']
+- name: 'gcr.io/$PROJECT_ID/build-image'
+  args: ['sh','./check_unity.sh']
+- name: 'gcr.io/$PROJECT_ID/build-image'
+  args: ['cmake','.']
+  env: 
+    - 'CC=/usr/bin/gcc-8'
+    - 'CXX=/usr/bin/g++-8'
+  timeout: 60s
+- name: 'gcr.io/$PROJECT_ID/build-image'
+  args: ['make']
+  timeout: 60s
+- name: 'gcr.io/$PROJECT_ID/build-image'
+  args: ['make','test']
+  timeout: 60s
+images:
+- 'gcr.io/$PROJECT_ID/build-image'
