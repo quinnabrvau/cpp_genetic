@@ -11,13 +11,9 @@
 #ifdef TESTING
     #include "unity.h"
     #define ASSERT(...) TEST_ASSERT(__VA_ARGS__)
-else
-    #ifdef DEBUG
-        #include <cassert>
-        #define ASSERT(...) assert(__VA_ARGS__)
-    #else
-        #define ASSERT(...) #__VA_ARGS__
-    #endif
+#else
+    #include <cassert>
+    #define ASSERT(...) assert(__VA_ARGS__)
 #endif
 
 namespace genetic {
@@ -26,10 +22,10 @@ template<class A>
 void mutate(A& array, float mutation_rate = 0.0, float mutation_scale = 0.0);
 
 template<class A>
-A breed(A& parent1, A& parent2 );
+    A breed(const A& parent1, const A& parent2, float div = 0.5);
 
 template<class A>
-A bread_mutate(A& parent1, A& parent2, float mutation_rate = 0.0, float mutation_scale = 0.0);
+A bread_mutate(const A& parent1, const A& parent2, float div = 0.5, float mutation_rate = 0.0, float mutation_scale = 0.0);
 
 template<class A, class T>
 void random_init(A& array, T min, T max);

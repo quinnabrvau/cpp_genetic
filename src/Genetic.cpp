@@ -14,7 +14,7 @@ namespace genetic {
 
 template<class A>
 void mutate(A& array, float mutation_rate, float mutation_scale) {
-    int size = s.size();
+    int size = array.size();
 
     // initialize the locations to be changed
     std::vector<int> locs(size * mutation_rate);
@@ -32,64 +32,81 @@ void mutate(A& array, float mutation_rate, float mutation_scale) {
     auto ait = array.begin();   
     int index = 0;
 
+    // iterate through arrays
     while (lit != locs.end() && cit != changes.end() && ait != array.end()) {
-        if (index == *lit) {
-            (*ait) *= (*cit);
-            cit++; lit++;
+        if (index == *lit) { // if we are at the next change location
+            (*ait) *= (*cit); // change by scale
+            cit++; lit++; // increment change iterators
         }
-        ait++; index++;
+        ait++; index++; //increment array iterators
     }
 }
 
 template<class A>
-A breed(A& parent1, A& parent2 ) {
+A breed(const A& parent1, const A& parent2, float div ) {
+    ASSERT(div>=0 && div<=1); //check that ratio is in [0,1]
+    if (div < 0.5) { // switch order to minimize copy operations
+        return breed (parent1, parent2, 1-div);
+    }
+    
+    // check the two arrays are the same size
     ASSERT(parent1.size() == parent2.size());
+    // create the random number generator
     std::default_random_engine generator;
-    std::uniform_int_distribution<int> dist(0, 1);
-    A out(parent1.begin(),parent1.end());
+    std::uniform_int_distribution<float> dist(0, 1);
+    
+    // initialize the output as parent 1;
+    A out(parent1.cbegin(),parent1.cend());
 
-    auto pit = parent2.begin(); 
-    auto oit = out.begin(); 
-
-    while (pit != parent2.end() && oit != out.end()) {
-        if (dist(generator)) {
+    // initialize iterators
+    auto pit = parent2.cbegin(); //const
+    auto oit = out.begin();
+    
+    // iterate through array
+    while (pit != parent2.cend() && oit != out.end()) {
+        if (dist(generator) > div) { // check if this data should be parent 2;
             (*oit) = (*pit);
         }
+        pit++; oit++; //increment array iterators
     }
-    return out;
+    return out; //return child
 }
 
 template<class A>
-A bread_mutate(A& parent1, A& parent2, float mutation_rate, float mutation_scale) {
+A bread_mutate(const A& parent1, const A& parent2, float div, float mutation_rate, float mutation_scale) {
     A out = breed(parent1, parent2);
     out.mutate(mutation_rate, mutation_scale);
     return out;
 }
 template<class A, class T>
 void r_random(A& array, T min, T max) {
+    // create random number distribution
     std::default_random_engine generator;
     std::uniform_real_distribution<T> dist(min,max);
+    // iterate through array
     for (auto it = array.begin(); it != array.end(); it++) {
-        (*cit) = dist(generator);
+        (*it) = dist(generator); // set value to random number
     }
 }
 
 template<class A, class T>
 void i_random(A& array, T min, T max) {
+    // create random number distribution
     std::default_random_engine generator;
     std::uniform_int_distribution<T> dist(min,max);
+    // iterate through array
     for (auto it = array.begin(); it != array.end(); it++) {
-        (*cit) = dist(generator);
+        (*it) = dist(generator); // set value to random number
     }
 }
 
 template<class A, class T>
 void random_init(A& array, T min, T max) {
-    ASSERT(max>=min);
+    ASSERT(max>=min); // check the max > min
     if (std::is_integral<T>::value) {
-        i_random<A,T>(min, max);
+        i_random<A,T>(array, min, max); // init value to integer array
     } else if (std::is_floating_point<T>::value) {
-        r_random<A,T>(min, max);
+        r_random<A,T>(array, min, max); // init value to floating point array
     } else {
         ASSERT(false);
     }
@@ -99,8 +116,12 @@ void random_init(A& array, T min, T max) {
 
 #ifdef  TESTING
 #include <iostream>
+#include <list>
+#include <vector>
 
-using namespace genetic {
+
+using namespace genetic;
+using namespace std;
 
 
 template<class A, class T>
@@ -153,9 +174,9 @@ bool _test__Genetic__breed(const A& a, const A& b, const A& c) {
     while (ait != a.cend() && bit != b.cend() && cit != c.cend()) {
         if (*cit != *ait && *cit != *bit) 
             return false;
+        ait++; bit++; cit++;
     } 
     return true;
-
 }
 
 template<class A, class T>
@@ -167,29 +188,32 @@ void test__Genetic__breed(void) {
         A c = breed<A>(a,b);
         TEST_ASSERT(c.size()==a.size());
         TEST_ASSERT(_test__Genetic__breed<A>(a,b,c));
-        A d = breed<A>(c, a);
-        TEST_ASSERT(D.shape()==A.shape());
-        TEST_ASSERT(_test__Genetic__breed<A>(a,c,d));
+        A d = breed<A>(c, a, 0.2);
+        TEST_ASSERT(d.size()==a.size());
+        TEST_ASSERT(_test__Genetic__breed<A>(a,b,d));
+        
+        A e = breed<A>(c, d, 0.8);
+        TEST_ASSERT(d.size()==a.size());
+        TEST_ASSERT(_test__Genetic__breed<A>(a,b,e));
     }
 }
-template<class T>
+template<class A, class T>
 void test__Genetic__mutate(void) {
     for (int i = 1; i < 40; i++) {
-        A a(i); random_init(a,1,1); //will intialize to all ones
+        A G(i); random_init(G,1,1); //will intialize to all ones
         TEST_ASSERT(test__Genetic__in_range(G, 1, 1));
         TEST_ASSERT(test__Genetic__equal(G,1));
         mutate<A>(G,1,1);
         TEST_ASSERT(test__Genetic__in_range(G, 0, 2));
         TEST_ASSERT(!test__Genetic__equal(G,1));
-        }
     }
 }
 
 
 typedef void (*void_func) (void);
 
-typedef unsigned int unchar__;
-typedef unsigned unshort__ ;
+typedef unsigned char unchar__;
+typedef unsigned short unshort__ ;
 typedef unsigned int unint__;
 typedef unsigned long unlong__;
 typedef long long longlong__;
@@ -198,15 +222,14 @@ typedef long double longdouble__;
 #define __GEN_RUN_TEST(func,type,cont)        \
 do {                                          \
 void_func func ## _ ## cont ## _ ## type      \
-= func < std::cont< type > >;                 \
+= func < cont < type >, type >;                 \
 RUN_TEST( (func ## _ ## cont ## _ ## type) ); \
 } while(false)
 
 #define _GEN_RUN_TEST_CONTAINER_TYPE(func, type)  \
 do {                                              \
-___RUN_TEST( func,type,  list );             \
-___RUN_TEST( func,type,  vector );           \
-___RUN_TEST( func,type,  array );            \
+__GEN_RUN_TEST( func, type,  list );             \
+__GEN_RUN_TEST( func, type,  vector );           \
 } while(false)
 
 #define _GEN_RUN_TEST_NUM_TYPE(func)                   \
@@ -229,14 +252,12 @@ _GEN_RUN_TEST_CONTAINER_TYPE( func, longdouble__ );    \
 
 
 void test__Genetic(void) {
-    /*
-    _NUM_T_RUN_TEST(test__Genetic__random);
-    _NUM_T_RUN_TEST(test__Genetic__breed);
-    _NUM_T_RUN_TEST(test__Genetic__mutate);
-    */
+    
+    _GEN_RUN_TEST_NUM_TYPE(test__Genetic__random);
+    _GEN_RUN_TEST_NUM_TYPE(test__Genetic__breed);
+    _GEN_RUN_TEST_NUM_TYPE(test__Genetic__mutate);
 }
 
-};//using namespace genetic
 
 #endif//TESTING
 
