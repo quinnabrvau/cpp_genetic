@@ -105,47 +105,14 @@ _random_init(A& array, T min, T max) {
 
 template<class A, class T>
 void random_init(A& array, T min, T max) {
-    ASSERT(max>=min); // check the max > min    
+    ASSERT(max>=min); // check the max > min
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
     bool done = _random_init(array, min, max);
+#pragma GCC diagnostic pop
 }
 
-void train_epach_single(int num_trials = 1) {
-    ASSERT(eval_f_sing != NULL);
-    for (int i = 0; i < num_trials; i++) {
-        for (auto it = agents.begin(); it != agents.end(); it++) {
-            (*it).second += eval_f_sing( &(*it).first, p_context);
-        }
-    }
-}
 
-void train_epach_multi(int num_trials = 1, int num_agents = 2) {
-    ASSERT(eval_f_multi != NULL);
-    ASSERT(num_agents >= agents.size());
-    int i, j
-    for ( i = 0; i < num_trials; i++) {
-        std::random_shuffle(agents.begin(), agents.end());
-        std::vector<A*> v(num_agents);
-        auto it = agents.begin();
-
-        while (it != agents.end()) {
-            std::vector<T> res = eval_f_multi( v, p_context ); //evaluate group
-            auto rit = res.end(); // start at end
-
-            // iterate backwards to the start
-            do {
-                rit--;
-                (*it).second += *rit;
-            } while (rit != res.begin() && it-- != agents.begin());
-
-            // go to next starting point
-            it++;
-            // reassign vector of pointers to data 
-            do {
-                v[j] = &(*it).first;
-            } while(j<num_agents && it++ != agents.end())
-        }
-    }
-}
 
 }; //namespace genetic
 

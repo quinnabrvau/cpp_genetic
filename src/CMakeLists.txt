@@ -5,7 +5,9 @@ file(GLOB_RECURSE headers "../include/*.hpp")
 
 set( GENETIC_SOURCES
     ./Genetic.cpp
+    ./Genetic_Trainer.cpp
     ../include/Genetic.hpp
+    ../include/Genetic_Trainer.hpp
 )
 
 include_directories(
@@ -22,7 +24,9 @@ target_include_directories(GENETIC_TEST_LIB
 target_compile_definitions(GENETIC_TEST_LIB
     PRIVATE TESTING
 )
-
 add_library(GENETIC_LIB
     ${GENETIC_SOURCES}
+)
+target_compile_options(GENETIC_LIB
+    PRIVATE -O3
 )

@@ -6,11 +6,13 @@
 //
 
 #include "Genetic.hpp"
+#include "Genetic_Trainer.hpp"
 
 #include "unity.h"
 
 int main(int argc, const char * argv[]) {
     UNITY_BEGIN();
     test__Genetic();
+    test__Genetic_Trainer();
     return UNITY_END();
 }

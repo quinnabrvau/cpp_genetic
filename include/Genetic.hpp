@@ -33,34 +33,6 @@ A bread_mutate(const A& parent1, const A& parent2, float div = 0.5, float mutati
 template<class A, class T>
 void random_init(A& array, T min, T max);
 
-
-template<class A, class T>
-class Genetic_Trainer
-{
-    typedef pair<A,T> agent;
-    typedef T (*evaluation_func_sing) (A*, void*);
-    typedef std::vector<T> (*evaluation_func_multi) (std::vector<A*>, void*);
-
-    evaluation_func_sing eval_f_sing;
-    evaluation_func_multi eval_f_mult;
-    std::vector<agent> agents;
-    void* p_context;
-public:
-    Genetic_Trainer(int num_agents, 
-            evaluation_func _eval_f_sing = NULL, 
-            evaluation_func_multi _eval_f_mult = NULL, 
-            void* context = NULL ) :
-        agents(num_agents), eval_f_sing(_eval_f_sing), eval_f_mult(_eval_f_mult), p_context(context) {
-
-        }
-
-    void train_epach_single(int num_trials = 1);
-    void train_epach_multi(int num_trials = 1);
-    
-};
-
-
-
 }; //namespace genetic
 
 void test__Genetic(void);
