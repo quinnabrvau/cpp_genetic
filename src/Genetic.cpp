@@ -212,54 +212,6 @@ void test__Genetic__mutate(void) {
 }
 
 
-typedef void (*void_func) (void);
-
-typedef unsigned char unchar__;
-typedef unsigned short unshort__ ;
-typedef unsigned int unint__;
-typedef unsigned long unlong__;
-typedef long long longlong__;
-typedef long double longdouble__;
-
-#define __GEN_RUN_TEST(func,type,cont)        \
-do {                                          \
-void_func func ## _ ## cont ## _ ## type      \
-= func < cont < type >, type >;                 \
-RUN_TEST( (func ## _ ## cont ## _ ## type) ); \
-} while(false)
-
-#define _GEN_RUN_TEST_CONTAINER_TYPE(func, type)  \
-do {                                              \
-__GEN_RUN_TEST( func, type,  list );             \
-__GEN_RUN_TEST( func, type,  vector );           \
-} while(false)
-
-#define _GEN_RUN_TEST_INUM_TYPE(func)                  \
-do {                                                   \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, char );            \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unchar__ );        \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, int );             \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unint__ );         \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, short );           \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unshort__ );       \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, long );            \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unlong__ );        \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, longlong__ );      \
-} while(false)
-
-#define _GEN_RUN_TEST_RNUM_TYPE(func)                   \
-do {                                                   \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, float );           \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, double );          \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, longdouble__ );    \
-} while(false)
-
-#define _GEN_RUN_TEST_NUM_TYPE(func)   \
-do {                                    \
-    _GEN_RUN_TEST_INUM_TYPE(func);      \
-    _GEN_RUN_TEST_RNUM_TYPE(func);      \
-} while (false)
-
 void test__Genetic(void) {
     
     _GEN_RUN_TEST_NUM_TYPE(test__Genetic__random);
