@@ -29,6 +29,32 @@ namespace genetic {
         float mutation_rate = 0.0;
         float mutation_scale = 0.0;
     public:
+        //init with known agents
+        Genetic_Trainer(std::vector<A> _agents, int num_agents=-1,
+                        evaluation_func_sing  _eval_f_sing = NULL,
+                        evaluation_func_multi _eval_f_mult = NULL,
+                        void* context = NULL, T min = 0, T max = 1 ):
+        eval_f_sing(_eval_f_sing), eval_f_mult(_eval_f_mult), p_context(context) {
+            
+            if (agents.size() < num_agents) {
+                agents = std::vector<A> (num_agents);
+                for (int i = 0; i < num_agents; i++) {
+                    agents[i].first = 0;
+                    if (i < agents.size()) {
+                        agents[i].second = _agents[i];
+                    } else {
+                        random_init(agents[i], min, max);
+                    }
+                }
+            } else {
+                agents = std::vector<A>(_agents.size());
+                for (int i = 0; i < agents.size(); i++) {
+                    agents[i].first = 0;
+                    agents[i].second = _agents[i];
+                }
+            }
+        }
+        
         Genetic_Trainer(int num_agents = 10,
                         evaluation_func_sing  _eval_f_sing = NULL,
                         evaluation_func_multi _eval_f_mult = NULL,
@@ -56,31 +82,34 @@ namespace genetic {
                 mutation_scale = _mutation_scale;
             }
         }
-        
         void train_epach_single(int num_trials = 1);
         void train_epach_multi(int num_trials = 1, int num_agents = 2);
         
-        void sort_agents(void);
-        void breed_agents(int keep = 2 );
+        void sort_agents(bool max = true);
+        void breed_agents(int keep = 2, bool max = true);
         std::vector<A> return_agents(void);
         
         std::vector<A> train_single(int num_epochs = 1,
                                     int keep = 2,
-                                    int num_trials = 1);
+                                    int num_trials = 1,
+                                    bool max = true);
         
         std::vector<A> train_multi(int num_epochs = 1,
                                    int keep = 2,
                                    int num_trials = 1,
-                                   int num_agents_per_train = 2);
+                                   int num_agents_per_train = 2,
+                                   bool max = true);
         
-        #ifdef TESTING
-            void test__sort_agents(void);
-        #endif//TESTING
+        
+        // basic index access functions
+        int size() const {return agents.size();}
+        A& operator[](int index) {return agents[index].second;}
+        T& operator()(int index) {return agents[index].first;}
+        
+        void test__random_init_points(void);
     };
 };
 
 void test__Genetic_Trainer(void);
-
-
 
 #endif /* Genetic_Trainer_hpp */

@@ -10,13 +10,13 @@ set( GENETIC_SOURCES
     ../include/Genetic_Trainer.hpp
 )
 
+
 include_directories(
     ../include
 )
-
 add_library(GENETIC_TEST_LIB
-    ../unity/src/unity.c
     ${GENETIC_SOURCES}
+    ../unity/src/unity.c
 )
 target_include_directories(GENETIC_TEST_LIB
     PRIVATE ../unity/src
@@ -24,6 +24,7 @@ target_include_directories(GENETIC_TEST_LIB
 target_compile_definitions(GENETIC_TEST_LIB
     PRIVATE TESTING
 )
+
 add_library(GENETIC_LIB
     ${GENETIC_SOURCES}
 )

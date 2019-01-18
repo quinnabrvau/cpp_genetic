@@ -38,7 +38,23 @@ void random_init(A& array, T min, T max);
 void test__Genetic(void);
 
 #ifdef TESTING
-#include "unity.h"
+
+template<class A, class T>
+bool test__Genetic__equal(const A& array, T val);
+template<class A, class T>
+bool test__Genetic__in_range(const A& array, T min, T max);
+
+#define TEST_G_IN_RANGE(_A,_T,A,min,max)                    \
+do {                                                        \
+bool foo = test__Genetic__in_range<_A,_T>(A,min,max);       \
+TEST_ASSERT(foo);                                           \
+} while(0);
+
+#define TEST_G_EQUAL(_A,_T,A,val)                           \
+do {                                                        \
+bool foo = test__Genetic__equal<_A,_T>(A,val);              \
+TEST_ASSERT(foo);                                           \
+} while(0);
 
 typedef void (*void_func__g) (void);
 

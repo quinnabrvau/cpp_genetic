@@ -74,8 +74,8 @@ A breed(const A& parent1, const A& parent2, float div ) {
 
 template<class A>
 A bread_mutate(const A& parent1, const A& parent2, float div, float mutation_rate, float mutation_scale) {
-    A out = breed(parent1, parent2);
-    out.mutate(mutation_rate, mutation_scale);
+    A out = breed<A>(parent1, parent2, div);
+    mutate<A>(out, mutation_rate, mutation_scale);
     return out;
 }
 
@@ -116,15 +116,12 @@ void random_init(A& array, T min, T max) {
 
 }; //namespace genetic
 
-#ifdef  TESTING
+
+#ifdef TESTING
 #include <iostream>
 #include <list>
 #include <vector>
-
-
-using namespace genetic;
-using namespace std;
-
+#include "unity.h"
 
 template<class A, class T>
 bool test__Genetic__equal(const A& array, T val) {
@@ -146,23 +143,26 @@ bool test__Genetic__in_range(const A& array, T min, T max) {
     return true;
 }
 
+using namespace genetic;
+using namespace std;
+
 template<class A,class T>
 void test__Genetic__random(void) {
     for (int i = 0; i < 40; i++) {
         A array(i);
         random_init<A,T>(array,0,10);
-        TEST_ASSERT(test__Genetic__in_range(array, 0, 10));
+        TEST_G_IN_RANGE(A,T,array, 0, 10);
 
         random_init<A,T>(array,10,20);
-        TEST_ASSERT(test__Genetic__in_range(array, 10, 20));
+        TEST_G_IN_RANGE(A,T,array, 10, 20);
 
         random_init<A,T>(array,0,0); //will intialize to all zeros (not efficient)
-        TEST_ASSERT(test__Genetic__in_range(array, 0, 0));
-        TEST_ASSERT(test__Genetic__equal(array,0));
+        TEST_G_IN_RANGE(A,T,array, 0, 0);
+        TEST_G_EQUAL(A,T,array,0);
 
         random_init<A,T>(array,1,1); //will intialize to all ones (not efficient)
-        TEST_ASSERT(test__Genetic__in_range(array, 1, 1));
-        TEST_ASSERT(test__Genetic__equal(array,1));
+        TEST_G_IN_RANGE(A,T,array, 1, 1);
+        TEST_G_EQUAL(A,T,array,1);
     }
 }
 
@@ -203,23 +203,35 @@ template<class A, class T>
 void test__Genetic__mutate(void) {
     for (int i = 1; i < 40; i++) {
         A G(i); random_init(G,1,1); //will intialize to all ones
-        TEST_ASSERT(test__Genetic__in_range(G, 1, 1));
-        TEST_ASSERT(test__Genetic__equal(G,1));
+        TEST_G_IN_RANGE(A,T,G, 1, 1);
+        TEST_G_EQUAL(A,T,G,1);
+        mutate<A>(G,0,1);
+        TEST_G_EQUAL(A,T,G,1);
+        mutate<A>(G,1,0);
+        TEST_G_EQUAL(A,T,G,1);
         mutate<A>(G,1,1);
-        TEST_ASSERT(test__Genetic__in_range(G, 0, 2));
+        TEST_G_IN_RANGE(A,T,G, 0, 2);
         TEST_ASSERT(!test__Genetic__equal(G,1));
     }
 }
 
+template<class A, class T>
+void test__Genetic__bread_mutate(void)  {
+    for (int i = 1; i < 40; i++) {
+        A a(i), b(i);
+        random_init<A,T>(a,10,10);
+        random_init<A,T>(b,11,11);
+        A c = bread_mutate<A>(a,b,0.5,0.2,0.1);
+        TEST_G_IN_RANGE(A,T,c, 8, 14);
+    }
+}
 
 void test__Genetic(void) {
-    
     _GEN_RUN_TEST_NUM_TYPE(test__Genetic__random);
     _GEN_RUN_TEST_NUM_TYPE(test__Genetic__breed);
     _GEN_RUN_TEST_NUM_TYPE(test__Genetic__mutate);
+    _GEN_RUN_TEST_NUM_TYPE(test__Genetic__bread_mutate);
 }
 
-
 #endif//TESTING
-
 
