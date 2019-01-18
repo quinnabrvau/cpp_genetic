@@ -12,6 +12,8 @@
 #include <vector>
 #include <list>
 
+#include <iostream>
+
 using namespace genetic;
 using namespace std;
 
@@ -27,19 +29,27 @@ T eval_func(A* array, void* context) {
 
 template<class A, class T> 
 void find_ones(void) {
+
     T one = 1;
-    Genetic_Trainer<A,T> GT(200, //200 agents
+    Genetic_Trainer<A,T> GT(200, // 200 agents
+                            20,  // 20 points per agent
                             eval_func<A,T>, // function to evalutate single
                             NULL, // function to evaluate multiple
                             &one, // pointer to context, in this case a pointer to 1 
                             0,    // min start value
-                            255   // max start value
-                            );
-    GT.train_single(    50,// epochs
-                        20,// keep the best 20
-                        1, // one trial because it is deterministic
-                        false//minimize
-                        );
+                            127);   // max start value
+    
+    std::vector<A> res = GT.train_single(    
+                                50,// epochs
+                                20,// keep the best 20
+                                1, // one trial because it is deterministic
+                                false );//minimize
+    cout << "res[0]\tlen " << res[0].size() << "\n";
+    for (auto it = res[0].begin(); it != res[0].end(); it++) {
+        T foo = *it;
+        cout << "\t" << T << "\n";
+        TEST_ASSERT_LESS_THAN(2, *it);
+    }
 }
 
 
