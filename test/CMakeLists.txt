@@ -2,7 +2,7 @@ project( TEST )
 
 cmake_minimum_required (VERSION 3.4)
 
-file(GLOB_RECURSE UNITY_SOURCES "../unity/src/*")
+file(GLOB_RECURSE UNITY_SOURCES "../unity/src/*.c")
 
 include_directories (
     ../include
@@ -26,7 +26,12 @@ add_executable (_Find_Multi
 target_link_libraries(_Find_Multi
     GENETIC_TEST_LIB
 )
+target_compile_definitions(_Find_Multi
+    PRIVATE TESTING
+)
 add_test (NAME Multi_Test COMMAND _Find_Multi)
+
+
 
 add_executable (_Find_Sing
     find_ones_sing.cpp

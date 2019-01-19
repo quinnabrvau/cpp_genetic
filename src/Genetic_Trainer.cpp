@@ -37,6 +37,12 @@ void test__GT__sort_agents(void) {
     GT.sort_agents();
     T val = GT(0);
     for (int i = 1; i < GT.size(); i++) {
+        TEST_ASSERT_LESS_OR_EQUAL(val, GT(i));
+        val = GT(i);
+    }
+    GT.sort_agents(false);
+    val = GT(0);
+    for (int i = 1; i < GT.size(); i++) {
         TEST_ASSERT_GREATER_OR_EQUAL(val, GT(i));
         val = GT(i);
     }

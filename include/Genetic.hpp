@@ -33,6 +33,9 @@ template<class A>
             A& array, 
             float mutation_rate = 0.0, 
             float mutation_scale = 0.0) {
+        if (mutation_rate<=0 || mutation_scale<=0) {
+            return;
+        }
         int size = array.size();
 
         // initialize the locations to be changed
@@ -53,7 +56,7 @@ template<class A>
 
         // iterate through arrays
         while (lit != locs.end() && cit != changes.end() && ait != array.end()) {
-            if (index == *lit) { // if we are at the next change location
+            while (index == *lit) { // if we are at the next change location
                 (*ait) *= (*cit); // change by scale
                 cit++; lit++; // increment change iterators
             }
@@ -61,6 +64,49 @@ template<class A>
         }
     }
 
+template<class A>
+    void swap_genes(
+                A& array,
+                float mutation_rate = 0.0) {
+        if (mutation_rate<=0) {
+            return;
+        }
+        int size = array.size();
+        
+        // initialize the locations to be changed
+        std::vector<int> locs1(size * mutation_rate);
+        std::vector<int> locs2(size * mutation_rate);
+        random_init<std::vector<int>, int>(locs1, 0, size-1 );
+        random_init<std::vector<int>, int>(locs2, 0, size-1 );
+        
+        // sort locations to be changed
+        std::sort(locs1.begin(), locs1.end());
+        
+        // create iterators
+        auto lit = locs1.begin();
+        auto sit = locs2.begin();
+        auto ait = array.begin();
+        auto bit = array.begin();
+        int index1 = 0;
+        int index2 = 0;
+        
+        // iterate through arrays
+        while (lit != locs1.end() && ait != array.end()) {
+            while (index1 == *lit && sit != locs2.end()) { // if we are at the next change location
+                while (index2 < *sit) {
+                    bit++; index2++;
+                }
+                while (index2 > *sit) {
+                    bit--; index2--;
+                }
+                std::swap(*ait,*bit); // swap
+                sit++; lit++; // increment change iterators
+            }
+            ait++; index1++; //increment array iterators
+        }
+    }
+    
+    
 template<class A>
     A breed(
             const A& parent1, 
@@ -74,7 +120,7 @@ template<class A>
         // check the two arrays are the same size
         ASSERT(parent1.size() == parent2.size());
         // create the random number generator
-        std::default_random_engine generator;
+        std::random_device rd;
         std::uniform_real_distribution<float> dist(0, 1);
         
         // initialize the output as parent 1;
@@ -86,7 +132,7 @@ template<class A>
         
         // iterate through array
         while (pit != parent2.cend() && oit != out.end()) {
-            if (dist(generator) > div) { // check if this data should be parent 2;
+            if (dist(rd) > div) { // check if this data should be parent 2;
                 (*oit) = (*pit);
             }
             pit++; oit++; //increment array iterators
@@ -100,19 +146,22 @@ template<class A>
             const A& parent2, 
             float div = 0.5, 
             float mutation_rate = 0.0, 
-            float mutation_scale = 0.0) {
+            float mutation_scale = 0.0,
+            float swap_rate = 0.0) {
         A out = breed<A>(parent1, parent2, div);
         mutate<A>(out, mutation_rate, mutation_scale);
+        swap_genes(out, swap_rate);
         return out;
     }
 template< class A, typename T >
 typename std::enable_if<std::is_floating_point<T>::value, bool>::type
     _random_init(A& array, T min, T max) {
-        std::default_random_engine generator;
+        std::random_device rd;
         std::uniform_real_distribution<T> dist(min, max);
+        dist.reset();
         // iterate through array
         for (auto it = array.begin(); it != array.end(); it++) {
-            (*it) = dist(generator); // set value to random number
+            (*it) = dist(rd); // set value to random number
         }
         return true;
     }
@@ -120,11 +169,12 @@ typename std::enable_if<std::is_floating_point<T>::value, bool>::type
 template< class A, typename T >
 typename std::enable_if<std::is_integral<T>::value, bool>::type
     _random_init(A& array, T min, T max) {
-        std::default_random_engine generator;
+        std::random_device rd;
         std::uniform_int_distribution<T> dist(min, max);
+        dist.reset();
         // iterate through array
         for (auto it = array.begin(); it != array.end(); it++) {
-            (*it) = dist(generator); // set value to random number
+            (*it) = dist(rd); // set value to random number
         }
         return true;
     }
@@ -146,6 +196,10 @@ void test__Genetic(void);
 
 template<class A, class T>
 bool test__Genetic__equal(const A& array, T val);
+
+template<class A, class T>
+bool test__Genetic__equal(const A& a, const A& b);
+
 template<class A, class T>
 bool test__Genetic__in_range(const A& array, T min, T max);
 
@@ -159,6 +213,12 @@ TEST_ASSERT(foo);                                           \
 do {                                                        \
 bool foo = test__Genetic__equal<_A,_T>(A,val);              \
 TEST_ASSERT(foo);                                           \
+} while(0);
+
+#define TEST_G_NOT_EQUAL(_A,_T,A,val)                       \
+do {                                                        \
+bool foo = test__Genetic__equal<_A,_T>(A,val);              \
+TEST_ASSERT_FALSE(foo);                                     \
 } while(0);
 
 typedef void (*void_func__g) (void);
@@ -183,28 +243,33 @@ __GEN_RUN_TEST( func, type,  list );             \
 __GEN_RUN_TEST( func, type,  vector );           \
 } while(false)
 
-#define _GEN_RUN_TEST_INUM_TYPE(func)                  \
+#define _GEN_RUN_TEST_CNUM_TYPE(func)                  \
 do {                                                   \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, char );            \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unchar__g );        \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, int );             \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unint__g );         \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, short );           \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unshort__g );       \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, long );            \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, unlong__g );        \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, longlong__g );      \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, unchar__g );       \
 } while(false)
 
-#define _GEN_RUN_TEST_RNUM_TYPE(func)                   \
+#define _GEN_RUN_TEST_INUM_TYPE(func)                  \
+do {                                                   \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, int );             \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, unint__g );        \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, short );           \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, unshort__g );      \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, long );            \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, unlong__g );       \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, longlong__g );     \
+} while(false)
+
+#define _GEN_RUN_TEST_RNUM_TYPE(func)                  \
 do {                                                   \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, float );           \
 _GEN_RUN_TEST_CONTAINER_TYPE( func, double );          \
-_GEN_RUN_TEST_CONTAINER_TYPE( func, longdouble__g );    \
+_GEN_RUN_TEST_CONTAINER_TYPE( func, longdouble__g );   \
 } while(false)
 
-#define _GEN_RUN_TEST_NUM_TYPE(func)   \
+#define _GEN_RUN_TEST_NUM_TYPE(func)    \
 do {                                    \
+    _GEN_RUN_TEST_CNUM_TYPE(func);      \
     _GEN_RUN_TEST_INUM_TYPE(func);      \
     _GEN_RUN_TEST_RNUM_TYPE(func);      \
 } while (false)

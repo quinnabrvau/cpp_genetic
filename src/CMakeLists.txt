@@ -25,9 +25,9 @@ target_compile_definitions(GENETIC_TEST_LIB
     PRIVATE TESTING
 )
 
-add_library(GENETIC_LIB
-    ${GENETIC_SOURCES}
-)
-target_compile_options(GENETIC_LIB
-    PRIVATE -O3
-)
+# add_library(GENETIC_LIB
+#     ${GENETIC_SOURCES}
+# )
+# target_compile_options(GENETIC_LIB
+#     PRIVATE -O3
+# )

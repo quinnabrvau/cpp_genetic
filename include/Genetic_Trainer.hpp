@@ -30,6 +30,7 @@ namespace genetic {
         float div = 0.5;
         float mutation_rate = 0.0;
         float mutation_scale = 0.0;
+        float swap_rate = 0;
     public:
         //init with known agents
         Genetic_Trainer(std::vector<A> _agents, int num_agents=-1,
@@ -82,21 +83,24 @@ namespace genetic {
             }
         }
         
-        void set_breed_mutation_rates(float _div = -1, float _mutation_rate = -1, float _mutation_scale = -1) {
+        void set_breed_mutation_rates(float _div = -1, float _mutation_rate = -1, float _mutation_scale = -1, float _swap_rate = -1) {
             if (_div >= 0 && _div <= 1) {
                 div = _div;
             }
-            if (_mutation_rate >= 0 && _mutation_rate <= 1) {
+            if (_mutation_rate >= 0) {
                 mutation_rate = _mutation_rate;
             }
-            if (_mutation_scale >= 0 && _mutation_scale <= 1) {
+            if (_mutation_scale >= 0) {
                 mutation_scale = _mutation_scale;
+            }
+            if (_swap_rate >= 0) {
+                swap_rate = 0;
             }
         }
 
         void sort_agents(bool max = true) {
             std::sort(agents.begin(), agents.end());
-            if (!max) {
+            if (max) {
                 std::reverse(agents.begin(), agents.end());
             }
         }
@@ -105,7 +109,7 @@ namespace genetic {
             
             auto it = agents.begin();
             int index1, index2, i;
-            std::default_random_engine generator;
+            std::random_device rd;
             std::uniform_int_distribution<int> dist(0, keep);
             
             // move to start of agents to replace
@@ -116,13 +120,14 @@ namespace genetic {
             // replace remaining agents with agents bred from the keep set
             for (; it != agents.end(); it++) {
                 (*it).first = 0; // clear score
-                index1 = dist(generator);index2 = dist(generator); //choose parents to breed
+                index1 = dist(rd);index2 = dist(rd); //choose parents to breed
                 (*it).second = bread_mutate<A>(
                         agents[index1].second, //parent 1
                         agents[index2].second, //parent 2
                         div,                   //ratio of parent to use,
                         mutation_rate,         //percent of "genes" to mutate
-                        mutation_scale);       //range to mutate "genes"
+                        mutation_scale,        //range to mutate "genes"
+                        swap_rate);            //rate to swap genes
                 
             }
         }
@@ -154,7 +159,7 @@ namespace genetic {
 
         void train_epach_multi(int num_trials = 1, int num_agents = 2) {
             ASSERT(eval_f_mult != NULL);
-            ASSERT(num_agents >= agents.size());
+            ASSERT(num_agents <= agents.size());
             //TODO add warning if training amount will be unequal
             
             int i, j;
@@ -168,18 +173,19 @@ namespace genetic {
                     while (j<num_agents && it != agents.end()) {
                         v[j++] = &(*it++).second;
                     }
+                    if (j != num_agents) break; // check that we copied over the right number of agents
                     //evaluate group
-                    std::vector<T> res = eval_f_multi( v, p_context );
+                    std::vector<T> res = eval_f_mult( v, p_context );
                     
                     // create iterators to store data
                     auto rit = res.end(); // start at end
                     auto cit = it;
                     
                     // iterate backwards and copy the results into the agents score
-                    do {
+                    while (rit != res.begin() && cit != agents.begin()) {
                         rit--; cit--;
                         (*cit).first += *rit;
-                    } while (rit != res.begin() && cit-- != agents.begin());
+                    }
                 }
             }
         }
@@ -201,7 +207,7 @@ namespace genetic {
             // evaluate the agents
             // sort the agents
             train_epach_single(num_trials);
-            sort_agents();
+            sort_agents(max);
             // return the vector of agents sorted by current evaluation
             return return_agents();
             
@@ -224,7 +230,7 @@ namespace genetic {
             // evaluate the agents
             // sort the agents
             train_epach_multi(num_trials, num_agents_per_train);
-            sort_agents();
+            sort_agents(max);
             // return the vector of agents sorted by current evaluation
             return return_agents();
         }
